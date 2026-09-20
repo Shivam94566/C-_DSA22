@@ -29,3 +29,114 @@ for i in range(10):
 
 producer.flush()
 producer.close()
+
+
+
+
+2.
+
+consumer .py:
+from kafka import KafkaConsumer
+import json
+
+consumer = KafkaConsumer(
+    "server_metrics",
+    bootstrap_servers="localhost:9092",
+    auto_offset_reset="earliest",
+    enable_auto_commit=True,
+    group_id="aiops-monitor",
+    value_deserializer=lambda value: json.loads(value.decode("utf-8"))
+)
+
+print("Waiting for messages...")
+
+for message in consumer:
+
+    data = message.value
+
+    server = data["server_id"]
+    cpu = data["cpu_usage"]
+    memory = data["memory_usage"]
+
+    print("\nReceived:")
+    print("Server:", server)
+    print("CPU:", cpu, "%")
+    print("Memory:", memory, "%")
+
+    if cpu > 80:
+        print("ALERT: High CPU detected on", server)
+
+
+
+3.
+
+topic.py:
+from kafka.admin import KafkaAdminClient, NewTopic
+
+admin = KafkaAdminClient(
+    bootstrap_servers="localhost:9092"
+)
+
+topic = NewTopic(
+    name="server_metrics",
+    num_partitions=1,
+    replication_factor=1
+)
+
+admin.create_topics(new_topics=[topic])
+
+print("Topic created successfully!")
+
+admin.close()
+
+
+
+//command
+
+Step 1b: Alternatively, set up your local development environment
+
+1. First, clone the code sample locally:
+
+git clone https://github.com/azure/aistudio-copilot-sample
+cd aistudio-copilot-sample
+
+2.Next, create a new Python virtual environment where we can safely install the SDK packages:
+
+py -3 --version
+py -3 -m venv .venv
+
+output i think      .venv\scripts\activate
+
+3.Now that your environment is activated, install the SDK packages
+
+pip install -r requirements.txt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
